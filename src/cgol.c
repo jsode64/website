@@ -163,8 +163,6 @@ void update_state() {
             } else {
                 // Decay color in dead cells.
                 Pixel p = state.current[i];
-                p.r -= !!p.r;
-                p.g -= !!p.g;
                 p.b -= !!p.b;
                 state.next[i] = p;
             }

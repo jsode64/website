@@ -22,10 +22,10 @@ typedef double f64;
  * This file simulates Conway's Game of Life using pixel colors as the live/dead state.
  * 
  * Full white pixels are considered alive, everything else is considered dead.
- * This is important to note because the pixels fase when they die, so not all are black or white.
+ * This is important to note because the pixels fade when they die, so not all are black or white.
  */
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 /** A pixel in an image. */
 typedef union Pixel {
@@ -59,9 +59,15 @@ static struct {
     uZ h;
 } state = { NULL, NULL, 0, 0 };
 
-/** Is the cell alive? */
-bool is_cell_alive(Pixel p) {
-    return p.data == LIVE_CELL.data;
+/** Is the cell at the given index alive? */
+inline bool is_cell_alive_i(const uZ i) {
+    return state.current[i].data == LIVE_CELL.data;
+}
+
+/** Is the cell at the given coordinates alive? */
+inline bool is_cell_alive_xy(const uZ x, const uZ y) {
+    const uZ i = (y * state.w) + x;
+    return is_cell_alive_i(i);
 }
 
 /** Returns a pointer to the pixel/cell state. */
@@ -79,102 +85,84 @@ u32 get_state_height() {
     return state.h;
 }
 
-/** Destroys the state. */
-void destroy_state() {
+/**
+ * Resizes (or initializes) the state.
+ * 
+ * @param w The new width.
+ * @param h The new height.
+ * @param seed The initial state seed.
+ */
+void resize_state(const uZ w, const uZ h, const u32 seed) {
+    // Create new buffers..
+    const uZ bufferSize = sizeof(Pixel) * w * h;
+    Pixel* const newCurrent = (Pixel*)malloc(bufferSize);
+    Pixel* const newNext = (Pixel*)malloc(bufferSize);
+
+    // Fill new current.
+    srand(seed);
+    for (uZ y = 0; y < h; y++) {
+        for (uZ x = 0; x < w; x++) {
+            const uZ i = (y * w) + x;
+            if (x < state.w && y < state.h) {
+                // Carryover from previous.
+                newCurrent[i] = state.current[(y * state.w) + x];
+            } else {
+                // New cell.
+                newCurrent[i] = (!state.current && rand() % 2 == 0) ? LIVE_CELL : DEAD_CELL;
+            }
+        }
+    }
+
+    // Clean up old state.
     if (state.current) {
         free(state.current);
     }
     if (state.next) {
         free(state.next);
     }
-    state.current = NULL;
-    state.next = NULL;
-    state.w = 0;
-    state.h = 0;
-}
 
-/**
- * Initializes the state.
- * 
- * @param w The target's width.
- * @param h The target's height.
- * @param seed The initial state seed.
- */
-void init_state(u32 w, u32 h, u32 seed) {
-    // Clear the old state if present.
-    destroy_state();
-
-    // Calculate dimensions and allocate pixel data.
-    state.w = (uZ)w / 4;
-    state.h = (uZ)h / 4;
-    const uZ N_PIXELS = state.w * state.h;
-    state.current = (Pixel*)malloc(sizeof(Pixel) * N_PIXELS);
-    state.next = (Pixel*)malloc(sizeof(Pixel) * N_PIXELS);
-
-    // Initialize data.
-    srand(seed);
-    for (uZ i = 0; i < N_PIXELS; i++) {
-        state.current[i] = rand() % 2 == 0 ? LIVE_CELL : DEAD_CELL;
-    }
+    // Update state.
+    state.current = newCurrent;
+    state.next = newNext;
+    state.w = w;
+    state.h = h;
 }
 
 /** Updates the state. */
 void update_state() {
     for (uZ y = 0; y < state.h; y++) {
         for (uZ x = 0; x < state.w; x++) {
-            const uZ I = (y * state.w) + x;
-            const bool CAN_LEFT = x > 0;
-            const bool CAN_RIGHT = x < state.w - 1;
-            const bool CAN_UP = y > 0;
-            const bool CAN_DOWN = y < state.h - 1;
-            uZ nLiveNeighbors = 0;
+            const uZ leftX = (x > 0) ? x - 1 : state.w - 1;
+            const uZ rightX = (x < state.w - 1) ? x + 1 : 0;
+            const uZ downY = (y < state.h - 1) ? y + 1 : 0;
+            const uZ upY = (y > 0) ? y - 1 : state.h - 1;
+            const uZ i = (y * state.w) + x;
+            const bool isAlive = is_cell_alive_i(i);
+            u32 nLiveNeighbors = 0;
 
-            if (CAN_UP && CAN_LEFT && is_cell_alive(state.current[I - state.w - 1])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_UP && is_cell_alive(state.current[I - state.w])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_UP && CAN_RIGHT && is_cell_alive(state.current[I - state.w + 1])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_LEFT && is_cell_alive(state.current[I - 1])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_RIGHT && is_cell_alive(state.current[I + 1])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_DOWN && CAN_LEFT && is_cell_alive(state.current[I + state.w - 1])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_DOWN && is_cell_alive(state.current[I + state.w])) {
-                nLiveNeighbors++;
-            }
-
-            if (CAN_DOWN && CAN_RIGHT && is_cell_alive(state.current[I + state.w + 1])) {
-                nLiveNeighbors++;
-            }
+            // Count live neighbors.
+            nLiveNeighbors += (u32)is_cell_alive_xy(leftX, upY);
+            nLiveNeighbors += (u32)is_cell_alive_xy(x, upY);
+            nLiveNeighbors += (u32)is_cell_alive_xy(rightX, upY);
+            nLiveNeighbors += (u32)is_cell_alive_xy(leftX, y);
+            nLiveNeighbors += (u32)is_cell_alive_xy(rightX, y);
+            nLiveNeighbors += (u32)is_cell_alive_xy(leftX, downY);
+            nLiveNeighbors += (u32)is_cell_alive_xy(x, downY);
+            nLiveNeighbors += (u32)is_cell_alive_xy(rightX, downY);
 
             // Tell whether the cell will be alive or dead.
-            const bool WILL_LIVE = is_cell_alive(state.current[I])
+            const bool willLive = (isAlive)
                 ? nLiveNeighbors >= 2 && nLiveNeighbors <= 3
                 : nLiveNeighbors == 3;
-            
-            if (WILL_LIVE) {
-                state.next[I] = LIVE_CELL;
+            if (willLive) {
+                state.next[i] = LIVE_CELL;
             } else {
                 // Decay color in dead cells.
-                Pixel p = state.current[I];
+                Pixel p = state.current[i];
                 p.r -= !!p.r;
                 p.g -= !!p.g;
                 p.b -= !!p.b;
-                state.next[I] = p;
+                state.next[i] = p;
             }
         }
     }

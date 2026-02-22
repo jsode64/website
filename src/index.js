@@ -1,3 +1,6 @@
+// Ratio of pixels per cell.
+const CELL_RATIO = 4;
+
 const bytes = await (await fetch("./cgol.wasm")).arrayBuffer();
 const { instance } = await WebAssembly.instantiate(bytes, {});
 const e = instance.exports;
@@ -16,7 +19,7 @@ function onResize() {
     // Disable image smoothing for pixelated/nearest-neighbor scaling
     // Must be set after resizing as it resets the context
     ctx.imageSmoothingEnabled = false;
-    e.init_state(canvas.width, canvas.height, Math.random() * 100_000);
+    e.resize_state(canvas.width / CELL_RATIO,canvas.height / CELL_RATIO, Math.random() * 0xFFFFFFFF);
     
     // Resize offscreen canvas to match CGOL state size
     offscreen.width = e.get_state_width();

@@ -1,13 +1,65 @@
 body {
     margin: 0;
-    overflow: hidden;
     width: 100vw;
     height: 100vh;
     background: #000000;
+}
+
+a {
+	background: none;
+	color: inherit;
+	border: none;
+	padding: 20px 8px 20px 20px;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+    border-radius: 8px;
+    color: #111111;
+    opacity: 50%;
+    width: 200px;
+    height: 80px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: sans-serif;
+    font-family: serif;
+    font-weight: 1000;
+    font-size: 24px;
+}
+
+a:hover {
+    opacity: 75%;
 }
 
 canvas {
     display: block;
     width: 100%;
     height: 100%;
+}
+
+svg {
+    flex-shrink: 0;
+}
+
+.anchors {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.github-anchor {
+    background-color: #DDDDDD;
+}
+
+.linkedin-anchor {
+    background-color: #0A66C2;
+}
+
+.sitesource-anchor {
+    background-color: #654FF0;
 }

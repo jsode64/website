@@ -15,13 +15,10 @@ let cgolImage = offscreenCtx.createImageData(offscreen.width, offscreen.height);
 function onResize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
-    // Disable image smoothing for pixelated/nearest-neighbor scaling
-    // Must be set after resizing as it resets the context
+
     ctx.imageSmoothingEnabled = false;
-    e.resize_state(canvas.width / CELL_RATIO,canvas.height / CELL_RATIO, Math.random() * 0xFFFFFFFF);
+    e.resize_state(canvas.width / CELL_RATIO, canvas.height / CELL_RATIO, Date.now());
     
-    // Resize offscreen canvas to match CGOL state size
     offscreen.width = e.get_state_width();
     offscreen.height = e.get_state_height();
     cgolImage = offscreenCtx.createImageData(offscreen.width, offscreen.height);

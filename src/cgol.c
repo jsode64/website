@@ -1,7 +1,6 @@
 #include <emscripten/emscripten.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <time.h>
 
 /** Explicit type definitions: */
 
@@ -39,7 +38,7 @@ typedef union Pixel {
 } Pixel;
 
 /** A live cell. */
-static const Pixel LIVE_CELL = (Pixel){ .r = 0xFF, .g = 0xFF, .b = 0xFF, .a = 0xFF };
+static const Pixel LIVE_CELL = (Pixel){ .r = 0x00, .g = 0x00, .b = 0xFF, .a = 0xFF };
 
 /** A dead cell. Note that any non-white cell is dead, but this is their end state. */
 static const Pixel DEAD_CELL = (Pixel){ .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF };
@@ -71,29 +70,33 @@ inline bool is_cell_alive_xy(const uZ x, const uZ y) {
 }
 
 /** Returns a pointer to the pixel/cell state. */
+EMSCRIPTEN_KEEPALIVE
 u8* get_state_data() {
     return (u8*)state.current;
 }
 
 /** Returns the state's width. */
+EMSCRIPTEN_KEEPALIVE
 u32 get_state_width() {
     return state.w;
 }
 
+EMSCRIPTEN_KEEPALIVE
 /** Returns the state's height. */
 u32 get_state_height() {
     return state.h;
 }
 
+EMSCRIPTEN_KEEPALIVE
 /**
  * Resizes (or initializes) the state.
  * 
  * @param w The new width.
  * @param h The new height.
- * @param seed The initial state seed.
+ * @param seed The seed for `srand`.
  */
 void resize_state(const uZ w, const uZ h, const u32 seed) {
-    // Create new buffers..
+    // Create new buffers.
     const uZ bufferSize = sizeof(Pixel) * w * h;
     Pixel* const newCurrent = (Pixel*)malloc(bufferSize);
     Pixel* const newNext = (Pixel*)malloc(bufferSize);
@@ -108,7 +111,7 @@ void resize_state(const uZ w, const uZ h, const u32 seed) {
                 newCurrent[i] = state.current[(y * state.w) + x];
             } else {
                 // New cell.
-                newCurrent[i] = (!state.current && rand() % 2 == 0) ? LIVE_CELL : DEAD_CELL;
+                newCurrent[i] = (!state.current && rand() % 4 == 0) ? LIVE_CELL : DEAD_CELL;
             }
         }
     }
@@ -127,6 +130,7 @@ void resize_state(const uZ w, const uZ h, const u32 seed) {
     state.w = w;
     state.h = h;
 }
+EMSCRIPTEN_KEEPALIVE
 
 /** Updates the state. */
 void update_state() {

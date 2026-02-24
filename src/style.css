@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000000;
+}
+
+a {
+	background: none;
+    border: none;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+    opacity: 60%;
+    width: 75px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+a:hover {
+    opacity: 80%;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+svg {
+    flex-shrink: 0;
+}
+
+.reset-button {
+    position: absolute;
+    border: none;
+    border-radius: 0px;
+    left: 20px;
+    top: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: #FFFF00;
+    opacity: 60%;
+}
+
+.reset-button:hover {
+    opacity: 80%;
+}
+
+.anchors {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.github-anchor {
+    background-color: #DDDDDD;
+}
+
+.linkedin-anchor {
+    background-color: #0A66C2;
+}
+
+.sitesource-anchor {
+    background-color: #654FF0;
+}

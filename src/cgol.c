@@ -24,8 +24,6 @@ typedef double f64;
  * This is important to note because the pixels fade when they die, so not all are black or white.
  */
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-
 /** A pixel in an image. */
 typedef union Pixel {
     u32 data;
@@ -43,6 +41,9 @@ static const Pixel LIVE_CELL = (Pixel){ .r = 0x00, .g = 0x00, .b = 0xFF, .a = 0x
 /** A dead cell. Note that any non-white cell is dead, but this is their end state. */
 static const Pixel DEAD_CELL = (Pixel){ .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF };
 
+/** The odds of a random pixel being alive are 1 in this number. */
+static const u32 LIVE_CELL_ODDS = 4;
+
 /** The pixel data state. */
 static struct {
     /** The current game state buffer. */
@@ -57,6 +58,11 @@ static struct {
     /** Game height in number of cells. */
     uZ h;
 } state = { NULL, NULL, 0, 0 };
+
+/** Returns a random cell with a 1 in `LIVE_CELL_ODDS` of being alive. */
+inline Pixel rand_cell() {
+    return (rand() % LIVE_CELL_ODDS == 0) ? LIVE_CELL : DEAD_CELL;
+}
 
 /** Is the cell at the given index alive? */
 inline bool is_cell_alive_i(const uZ i) {
@@ -111,7 +117,7 @@ void resize_state(const uZ w, const uZ h, const u32 seed) {
                 newCurrent[i] = state.current[(y * state.w) + x];
             } else {
                 // New cell.
-                newCurrent[i] = (!state.current && rand() % 4 == 0) ? LIVE_CELL : DEAD_CELL;
+                newCurrent[i] = rand_cell();
             }
         }
     }
@@ -130,8 +136,17 @@ void resize_state(const uZ w, const uZ h, const u32 seed) {
     state.w = w;
     state.h = h;
 }
-EMSCRIPTEN_KEEPALIVE
 
+EMSCRIPTEN_KEEPALIVE
+/** Randomizes the state. */
+void randomize_state() {
+    const uZ area = state.w * state.h;
+    for (uZ i = 0; i < area; i++) {
+        state.current[i] = rand_cell();
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE
 /** Updates the state. */
 void update_state() {
     for (uZ y = 0; y < state.h; y++) {

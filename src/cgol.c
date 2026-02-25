@@ -36,7 +36,7 @@ typedef union Pixel {
 } Pixel;
 
 /** A live cell. */
-static const Pixel LIVE_CELL = (Pixel){ .r = 0x00, .g = 0x00, .b = 0xFF, .a = 0xFF };
+static const Pixel LIVE_CELL = (Pixel){ .r = 0x77, .g = 0x88, .b = 0x99, .a = 0xFF };
 
 /** A dead cell. Note that any non-white cell is dead, but this is their end state. */
 static const Pixel DEAD_CELL = (Pixel){ .r = 0x00, .g = 0x00, .b = 0x00, .a = 0xFF };
@@ -178,7 +178,9 @@ void update_state() {
             } else {
                 // Decay color in dead cells.
                 Pixel p = state.current[i];
-                p.b -= !!p.b;
+                p.r /= 2;
+                p.g /= 2;
+                p.b /= 2;
                 state.next[i] = p;
             }
         }

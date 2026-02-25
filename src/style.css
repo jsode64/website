@@ -12,7 +12,7 @@ a {
 	font: inherit;
 	cursor: pointer;
 	outline: inherit;
-    opacity: 60%;
+    opacity: 75%;
     width: 75px;
     height: 75px;
     display: flex;
@@ -21,7 +21,7 @@ a {
 }
 
 a:hover {
-    opacity: 80%;
+    opacity: 90%;
 }
 
 canvas {
@@ -37,12 +37,13 @@ svg {
 .reset-button {
     position: absolute;
     border: none;
+    cursor: pointer;
     border-radius: 0px;
     left: 20px;
     top: 20px;
     width: 50px;
     height: 50px;
-    background-color: #FFFF00;
+    background-color: #00AAFF;
     opacity: 60%;
 }
 
@@ -50,24 +51,53 @@ svg {
     opacity: 80%;
 }
 
+.info {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+    max-width: 90%;
+    gap: 20px;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    align-items: center;
+    justify-content: center;
+    color: #00AAFF;
+    font-weight: bold;
+}
+
+.name {
+    font-size: 48px;
+}
+
+.email {
+    font-size: 32px;
+}
+
+.bio {
+    font-size: 20px;
+}
+
 .anchors {
     position: absolute;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    top: 50%;
+    top: 55%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0%);
 }
 
 .github-anchor {
-    background-color: #DDDDDD;
+    background-color: #AABBCC;
 }
 
 .linkedin-anchor {
     background-color: #0A66C2;
 }
 
-.sitesource-anchor {
-    background-color: #654FF0;
+.resume-anchor {
+    background-color: #2299AA;
 }

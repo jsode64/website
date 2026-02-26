@@ -56,7 +56,6 @@ svg {
     display: flex;
     flex-direction: column;
     text-align: center;
-    width: 100%;
     max-width: 90%;
     gap: 20px;
     top: 20%;
@@ -64,7 +63,9 @@ svg {
     transform: translate(-50%, 0%);
     align-items: center;
     justify-content: center;
+    background-color: #00000088;
     color: #00AAFF;
+    font-family: Tahoma;
     font-weight: bold;
 }
 

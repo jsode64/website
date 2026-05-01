@@ -4,15 +4,21 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>writeup</title>
+  <title>Vulkan Project</title>
   <style>
+    .demo-video {
+      width: min(1000px, 80vw);
+      height: auto;
+      display: block;
+      margin: 1rem auto;
+    }
     html {
-      color: #1a1a1a;
-      background-color: #fdfdfd;
+      color: #F2EDEE;
+      background-color: #12090A;
     }
     body {
       margin: 0 auto;
-      max-width: 36em;
+      max-width: 80em;
       padding-left: 50px;
       padding-right: 50px;
       padding-top: 50px;
@@ -320,15 +326,15 @@ and grew more conscious of my future self.</p>
 uses just about everything I implemented. Shaders, allocations, images,
 and rendering of course.</p>
 <p>This is using 500 bodies:</p>
-<video controls width="1000" height="1000">
+<video controls class="demo-video">
 <source src="demo500.mp4" type="video/mp4">
 </video>
 <p>This is using 5,000 bodies (starts to form a nebula):</p>
-<video controls width="1000" height="1000">
+<video controls class="demo-video">
 <source src="demo5000.mp4" type="video/mp4">
 </video>
 <p>This is using 50,000 bodies:</p>
-<video controls width="1000" height="1000">
+<video controls class="demo-video">
 <source src="demo50000.mp4" type="video/mp4">
 </video>
 <p>Note that it looks much nicer when it’s not a compressed video.</p>
@@ -359,13 +365,13 @@ I was absolutely dumbfounded because the vertices at this time were
 clamped to be on the screen. It should not even be possible for them to
 leave. Where are they going? And why the top left every single time? How
 do I even debug a shader?</p>
-<p>I tried what I thought to be everything: - Maybe there’s
-uninitialized memory leading to a black hole of mass in the top left?
-Nope. I counted all 250 vertices in a screenshot. They’re all there. -
-Maybe they’re moving so fast you can’t see them? Nope. I clamped the
-velocities and they still disappear. - Maybe the y velocities are
-flipped or something? Nope. Trying all combinations of flipping vertices
-does the same thing.</p>
+<p>I tried what I thought to be everything: Maybe there’s uninitialized
+memory leading to a black hole of mass in the top left? Nope. I counted
+all 250 vertices in a screenshot. They’re all there. Maybe they’re
+moving so fast you can’t see them? Nope. I clamped the velocities and
+they still disappear. Maybe the y velocities are flipped or something?
+Nope. Trying all combinations of flipping vertices does the same
+thing.</p>
 <p>I had no clue what to do other than start brute force guessing it. I
 can’t print from a shader, I can’t do breakpoints, I can’t even read the
 data every frame the CPU can’t even see it.</p>

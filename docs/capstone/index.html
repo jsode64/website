@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>writeup</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<h1 id="vulkan-engine-capstone">Vulkan Engine Capstone</h1>
+<h2 id="introduction">Introduction</h2>
+<p>For my capstone project, I chose to create a minimal game engine,
+with graphics as a minimum requirement. I named it Ibis because when I
+started, it I was talking to my friend about birds and I asked him what
+bird he thought had the coolest name and he said the ibis. I chose Rust
+as my language despite Vulkan being a C/C++ API and it being undoubtedly
+the most unsafe library I’ve ever used, which goes against Rust’s core
+idea. I did end up writing a large portion in C, but eventually rewrote
+it in Rust because FFI was like pouring gas onto the fire with even more
+undefined behavior. The main reasons I chose Rust were I thought it
+would be more interesting. I am also a huge fan of Rust’s core (error
+handling, standard library, iterators). Maybe also because crates are a
+huge part of it, so I could maybe excuse any shortcomings saying
+“There’s a crate for that.” I’m ultimately most happy I chose Rust
+because of the last reason as the Vulkan part of the project, which
+ended up being the whole thing, were much more interesting to me than
+making an input handler or learning how to decompress a JPEG. In the
+end, the library does provide a huge layer over Vulkan while still
+exposing all the handles and functions if you want to do something it
+doesn’t already provide or doesn’t do optimally.</p>
+<h2 id="what-does-it-do">What Does It Do?</h2>
+<h3 id="abstraction">Abstraction</h3>
+<p>Ibis provides a layer of abstraction over Vulkan. It simplifies
+everything I could get it to. For example, the 1,000 lines for a
+triangle people talk about with Vulkan is almost entirely initialization
+for its structures. I packed everything that needs to be initialized
+into two structures: a context and renderer. They both have builders and
+can each be created in one line. Pipelines are even more simplified with
+Vulkan pipelines taking the most parameters I think anything ever will.
+The graphics pipeline creation function is easily over 100 lines which
+is way longer than I would like a function to be, but I can’t make it
+shorter. It’s just parameters. That can also be created in one line with
+a builder. Other important abstractions are buffers, which are very
+important to abstract because they are extremely annoying and dangerous
+to mangle with manually, allocators, images, and descriptor sets.
+Descriptor sets are how you send uniforms to shaders. I hate descriptor
+sets. I love everything else about the Vulkan library, but I hate
+descriptor sets. They are so, so confusing to me. Everything else comes
+to make sense once you’ve written and reread it, but not descriptor sets
+for me. They are also near impossible to abstract. I did recently learn
+about a widely supported extension that mostly replaces what I hate
+about them, which I will definitely consider for the future.</p>
+<h3 id="optimizations">Optimizations</h3>
+<p>Vulkan is often said to be faster than OpenGL, and, if it’s used
+right, it is. However, using it right is often very hard. I tried to
+make this easier for the user. One of the largest optimization layers I
+made was an arena allocator. In Vulkan, you can only have so many VRAM
+allocations, and there aren’t just limited by memory space, they’re also
+limited by number. For example, if you wanted to make one billion
+allocations of one byte into VRAM, even if you had plenty of room, you
+couldn’t if it’s past your device limit. Because of this, Vulkan
+benefits greatly from arena allocators, where one allocation can be used
+by multiple things that need it. Your GPU also has different memory
+“channels,” each supporting a different memory type. For example, host
+visible memory that is shared between your GPU and CPU will need a
+different allocation than device local memory, which only the GPU sees.
+The arena allocator takes an array of memory types and the size of the
+allocation which will be shared by all descendants. This means one arena
+allocator can be made with enough size for your entire program and
+you’ll never have to worry about memory. Of course, it being an arena
+allocator means nothing can be freed, but you can make multiple for
+temporary allocations.</p>
+<h3 id="parallelism">Parallelism</h3>
+<p>I tried to implement parallelism anywhere I could in my library since
+that’s another Vulkan philosophy that helps with its speed. Apart from
+the scary GPU synchronization barriers and semaphores, the biggest thing
+I went out of my way to make thread-safe was, once again, the arena
+allocator. Using an atomic counter, thirty threads or so could be asking
+for allocations at once without any trouble. At least in theory. I
+didn’t get to do much, but I felt it was worth noting as I will try to
+do more in the future.</p>
+<h2 id="what-i-learned">What I Learned</h2>
+<p>I learned a lot from this project, more than any other I’ve done
+before. I learned everything I could about Vulkan. How to use the API,
+how it works, how it’s changed, even how it came to be, which is a story
+I like. Essentially, before Vulkan, GPU drivers and APIs had no reason
+to be efficient. They would bog the CPU every time they used the GPU for
+anything, abstracted everything too much, and were overall inefficient.
+AMD didn’t like poor drivers bottlenecking their hardware. To combat
+this, they made a low-level zero-abstraction API called Mantle. The
+issue with Mantle was that AMD couldn’t make it work on, say, NVIDIA
+GPUs, so they handed it to the people who made OpenGL to make it a cross
+platform standard and it became Vulkan. It then revolutionized
+everything and forced Windows to optimize DirectX and now even Apple is
+making low-level GPU APIs in Metal. It’s not really relevant to the
+project but I thought its origin was really cool, and it is something I
+learned.</p>
+<h3 id="vulkan-internals">Vulkan Internals</h3>
+<p>I learned the most about Vulkan internals, as in how you use it and
+what things actually do. Before when I used the tutorials before,
+everything was just one extra line between me and a triangle, but now
+that I actually tried to understand, I see the beauty in it. I
+understand buffers, memory, barriers, and command buffers now, which
+make the experience so much more fun. This will be expanded in the
+coming sections. At some point I even began going to the official Vulkan
+documentation itself instead of to tutorials, which is when I realized
+I’m starting to get what’s happening.</p>
+<h3 id="other-api-workings">Other API Workings</h3>
+<p>Funnily, I learned a lot about how other higher-level APIs worked
+through using Vulkan. For example, when I first made my dynamic vertex
+buffer, it had one frame of data that was read and written to every
+frame. The problem with that is that GPUs are made to be parallel and
+there could be millions of threads accessing the vertex data while my
+CPU is <code>memcpy</code>ing it, which is a very bad race condition. To
+combat this, I added multiple frames to the data, one per frame in
+flight, which is written every frame or as needed. The problem with that
+is now I need to know which frame in flight index we need to write to in
+the buffer, which I can do by having one command buffer per frame in
+flight (you need multiple anyway). However, when you render, the command
+buffer needs to know which swapchain image to render to. So to render we
+get all the data we need for rendering (which frame in flight index,
+which swapchain image), then use it to fill the command buffer with
+whatever we need, then write it. I came up with a system where you start
+the command buffer and it gives you a scene with all the data that you
+fill with commands, then give it back to the renderer to submit. I then
+realized that this is exactly what Raylib does. You call
+<code>BeginRendering</code>, tell it what to do, then call
+<code>EndRendering</code>. It even does the same thing when rendering to
+textures. This is more an example of me learning optimization through
+problem solving, but I was mind blown when I realized that whoever made
+Raylib probably had the exact same experience.</p>
+<h3 id="vulkan-updates">Vulkan Updates</h3>
+<p>One of the things I found most interesting about Vulkan was its live
+service. It’s constantly being updated. There’s new minor versions every
+few years, and they each add a lot. They add maintainance extensions
+which make the API (for lack of a better word) better. The also take
+some extensions and bake them directly into the API, meaning you no
+longer need the extension and the driver <em>has</em> to support it. I
+ended up using one of them, called dynamic rendering. It completely
+removes the need for a render pass and framebuffer, instead letting you
+do it all when it’s needed, and in a much cleaner way in my opinion. It
+means I don’t need a render pass to render to the swapchain images (what
+gets shown to the screen) or even a texture, which I believe would have
+been a huge pain otherwise. I also ended up finally understanding what a
+render pass was when I replaced it with dynamic rendering. I also used
+another baked extension called synchronization 2 which I think is a
+funny name but it isn’t that interesting. Keeping a Vulkan library up to
+date and updating it with every new big Vulkan version sounds like a lot
+of fun to me and I’m glad I looked into it.</p>
+<h3 id="project-maintainance">Project Maintainance</h3>
+<p>This is the biggest project I’ve worked on by a long shot. I’ve made
+similar things with OpenGL, but not this feature-rich and one line of
+OpenGL is like 15 lines of Vulkan. It taught me the importance of
+documentation. Even if what follows a comment is obvious, the comment
+will still help when I’m skimming through looking for something. It
+wasn’t fun when I had to go through something I wrote a month prior with
+no documentation using an API I don’t fully understand. This became less
+of an issue as I became more familiar with Vulkan and bettered my habits
+and grew more conscious of my future self.</p>
+<h2 id="demo">Demo</h2>
+<p>Here is a demo I made to show what you can do with the library. It
+uses just about everything I implemented. Shaders, allocations, images,
+and rendering of course.</p>
+<p>This is using 500 bodies:</p>
+<video controls width="1000" height="1000">
+<source src="demo500.mp4" type="video/mp4">
+</video>
+<p>This is using 5,000 bodies (starts to form a nebula):</p>
+<video controls width="1000" height="1000">
+<source src="demo5000.mp4" type="video/mp4">
+</video>
+<p>This is using 50,000 bodies:</p>
+<video controls width="1000" height="1000">
+<source src="demo50000.mp4" type="video/mp4">
+</video>
+<p>Note that it looks much nicer when it’s not a compressed video.</p>
+<h3 id="what-its-doing">What It’s Doing</h3>
+<p>First, it generates vertices with random position color and mass,
+then sends it to the GPU in a staged buffer. The CPU will never see the
+data again.</p>
+<p>Then, every frame, a compute shader applies the gravitational force
+of each vertex onto the other, and moves them.</p>
+<p>The trails are rendered to a texture, which gets darkened every frame
+by another compute shader.</p>
+<p>The trails are then rendered to the texture by a graphics pipeline,
+using the position and velocities.</p>
+<p>The trail texture is drawn to the screen.</p>
+<p>The vertices are drawn pointing the direction of their velocity and
+with their mass as their size.</p>
+<p>There needs to be synchronization between everything, which is done
+through the usage of barriers so no two things are writing to the same
+or reading and writing the same.</p>
+<p>This is all done using only features the library exposes.</p>
+<h3 id="learning-from-the-demo">Learning From the Demo</h3>
+<p>Creating the demo drove me into one of the worst debugging
+experiences of my life. It was fun to debug on a call with my friend,
+but it’s the hardest bug I’ve ever had to fix, no contest.</p>
+<p>Basically, the first time the demo “worked,” it kept doing <a
+href="https://drive.google.com/file/d/1fKn12drriNr32hBGlOFvUG4104BIsDcW/view?usp=sharing">this</a>.
+I was absolutely dumbfounded because the vertices at this time were
+clamped to be on the screen. It should not even be possible for them to
+leave. Where are they going? And why the top left every single time? How
+do I even debug a shader?</p>
+<p>I tried what I thought to be everything: - Maybe there’s
+uninitialized memory leading to a black hole of mass in the top left?
+Nope. I counted all 250 vertices in a screenshot. They’re all there. -
+Maybe they’re moving so fast you can’t see them? Nope. I clamped the
+velocities and they still disappear. - Maybe the y velocities are
+flipped or something? Nope. Trying all combinations of flipping vertices
+does the same thing.</p>
+<p>I had no clue what to do other than start brute force guessing it. I
+can’t print from a shader, I can’t do breakpoints, I can’t even read the
+data every frame the CPU can’t even see it.</p>
+<p>Eventually I realized all that would escape the clamp was a NaN value
+and figured out through an if statement that puts them into the center
+and stops them if their velocity is NaN, that their velocity was in
+fact, becoming NaN. This was an issue with me using a tiny area for the
+simulation of [-1, 1] (now [-1,000, 1,000]), which led to what I assume
+to be some nasty divide by near-zero math into infinity which somehow
+turned into NaN. I didn’t realize why they weren’t rendering until I was
+falling asleep that night and realized that since it uses the velocity
+to know which way to face, it was drawing based on trig function results
+of NaN, and therefore weren’t appearing since that’s garbage. They were
+all still there in the top left corner in the same exact spot applying
+insane forces to themselves and the other vertices while being
+completely invisible. Turns out it was an actual black hole. Maybe my
+gravity simulation was just too realistic. At least I know some tricks
+for debugging shaders now.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In the end I’m very happy I chose this to be my project and I’m very
+happy with what I was able to get done. I learned more than I expected
+and I would have never guessed I was able to produce that demo from
+scratch by myself with Vulkan. I do want to keep working with Vulkan,
+but I think I will rewrite it to a C library with a C++ layer. I don’t
+feel a library that turns your computer off sometimees if you mess up
+aligns well with Rust, which is meant to be safe. It was great for
+getting a grasp of things though so I am ultimately glad that I chose to
+<em>learn</em> on Rust.</p>
+</body>
+</html>
